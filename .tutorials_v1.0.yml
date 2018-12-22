@@ -1,0 +1,17 @@
+pages:
+  stage: deploy
+  image: "juliagpu/julia:v1.0-${CI_IMAGE_TAG}"
+  dependencies:
+    - test:v1.0
+  script:
+    - julia --project=tutorials/ -e 'using Pkg;
+                                     Pkg.develop(PackageSpec(path=pwd()));
+                                     Pkg.instantiate()'
+    - JULIA_NUM_THREADS=4 julia --project=tutorials/ -e '
+          using Weave;
+          cd("tutorials/src");
+          weave("intro.jl", out_path="../build", doctype="md2html")'
+    - mv tutorials/build public
+  artifacts:
+    paths:
+    - public
